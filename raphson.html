@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="index.html">Beranda</a>
+        <a href="perhitungan.html">Dekomposisi LU</a>
+        <a href="regulafalsi.html">Regula Falsi</a>
+        <a href="biseksi.html">Biseksi</a>
+        <a href="raphson.html">Metode Newton-Raphson</a>
+        <a href="gaussjordan.html">Metode Eliminasi Gauss-Jordan</a>
+    </div>
+    <div class="content">
+        <h1>Metode Newton-Raphson</h1>
+        <p>Metode ini digunakan untuk mencari akar fungsi matematika.</p>
+        <p>Contoh persamaan: 4*x**3 - 15*x**2 +17*x - 6</p>
+        <label for="equation">Masukkan persamaan f(x):</label>
+        <input type="text" id="equation" placeholder="Contoh: 4*x**3 - 15*x**2 +17*x - 6"><br>
+        <label for="initial-guess">Tebakan awal (x0):</label>
+        <input type="number" id="initial-guess" step="0.01" placeholder="Contoh: 2.0"><br>
+        <label for="tolerance">Toleransi:</label>
+        <input type="number" id="tolerance" step="0.0001" placeholder="Contoh: 0.0001"><br>
+        <label for="max-iterations">Jumlah iterasi maksimum:</label>
+        <input type="number" id="max-iterations" placeholder="Contoh: 20"><br>
+        <button type="button" onclick="newtonRaphson()">Hitung (Newton-Raphson)</button>
+        <div id="newtonRaphson-result"></div>
+    </div>
+
+    <script>
+        function newtonRaphson() {
+            const equationInput = document.getElementById('equation').value;
+            const initialGuess = parseFloat(document.getElementById('initial-guess').value);
+            const tolerance = parseFloat(document.getElementById('tolerance').value);
+            const maxIterations = parseInt(document.getElementById('max-iterations').value);
+
+            const result = newtonRaphsonMethod(equationInput, initialGuess, tolerance, maxIterations);
+
+            const newtonRaphsonResult = document.getElementById('newtonRaphson-result');
+            newtonRaphsonResult.innerHTML = '<h3>Hasil Newton-Raphson:</h3>';
+
+            if (result.result !== null) {
+                newtonRaphsonResult.innerHTML += `<p>Akar dari fungsi adalah: ${result.result.toFixed(6)}</p>`;
+                newtonRaphsonResult.innerHTML += '<h3>Perhitungan Iterasi:</h3>';
+                newtonRaphsonResult.innerHTML += '<ul>';
+
+                for (const iter of result.iterations) {
+                    newtonRaphsonResult.innerHTML += `<li>Iterasi ke-${iter.iteration}: x = ${iter.x.toFixed(6)}, f(x) = ${iter.f_x.toFixed(6)}</li>`;
+                }
+
+                newtonRaphsonResult.innerHTML += '</ul>';
+            } else {
+                newtonRaphsonResult.innerHTML += "<p>Metode Newton-Raphson tidak berhasil menemukan akar.</p>";
+            }
+        }
+
+        function newtonRaphsonMethod(equationInput, initialGuess, tolerance, maxIterations) {
+            const iterationsResult = [];
+
+            let x = initialGuess;
+            for (let i = 0; i < maxIterations; i++) {
+                const currentIteration = {};
+                currentIteration.iteration = i + 1;
+                currentIteration.x = x;
+                currentIteration.f_x = equation(equationInput, x);
+                iterationsResult.push(currentIteration);
+
+                x = x - (equation(equationInput, x) / derivative(equationInput, x));
+                if (Math.abs(equation(equationInput, x)) < tolerance) {
+                    return { result: x, iterations: iterationsResult };
+                }
+            }
+            return { result: null, iterations: iterationsResult };
+        }
+
+        function equation(equationInput, x) {
+            return eval(equationInput);
+        }
+
+        function derivative(equationInput, x) {
+            return (equation(equationInput, x + 0.0001) - equation(equationInput, x)) / 0.0001;
+        }
+    </script>
+</body>
+</html>

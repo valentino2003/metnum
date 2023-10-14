@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="index.html">Beranda</a>
+        <a href="perhitungan.html">Dekomposisi LU</a>
+        <a href="regulafalsi.html">Regula Falsi</a>
+        <a href="biseksi.html">Biseksi</a>
+        <a href="raphson.html">Metode Newton-Raphson</a>
+        <a href="gaussjordan.html">Metode Eliminasi Gauss-Jordan</a>
+    </div>
+    <div class="content">
+        <h1>Metode Dekomposisi LU</h1>
+        <form>
+            <label for="numRows">Jumlah Baris:</label>
+            <input type="number" id="numRows" required><br>
+            <label for="numCols">Jumlah Kolom:</label>
+            <input type="number" id="numCols" required><br>
+            <button type="button" onclick="createMatrix()">Buat Matriks</button>
+            <div id="matrixInputs"></div>
+            <label for="vectorB">Vektor b (pisahkan dengan spasi):</label>
+            <input type="text" id="vectorB" required>
+            <button type="button" onclick="calculateLU()">Hitung</button>
+        </form>
+        
+        <div id="result"></div>
+
+        <script>
+            function createMatrix() {
+                const numRows = parseInt(document.getElementById('numRows').value);
+                const numCols = parseInt(document.getElementById('numCols').value);
+                const matrixInputs = document.getElementById('matrixInputs');
+                matrixInputs.innerHTML = '';
+
+                for (let i = 0; i < numRows; i++) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'matrix-row';
+
+                    for (let j = 0; j < numCols; j++) {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'number');
+                        input.setAttribute('placeholder', `A[${i}][${j}]`);
+                        rowDiv.appendChild(input);
+                    }
+
+                    matrixInputs.appendChild(rowDiv);
+                }
+            }
+
+            function calculateLU() {
+                const numRows = parseInt(document.getElementById('numRows').value);
+                const numCols = parseInt(document.getElementById('numCols').value);
+                const matrix = [];
+                for (let i = 0; i < numRows; i++) {
+                    matrix[i] = [];
+                    for (let j = 0; j < numCols; j++) {
+                        matrix[i][j] = parseFloat(document.getElementById('matrixInputs').children[i].children[j].value);
+                    }
+                }
+                const vectorB = document.getElementById('vectorB').value.split(' ').map(parseFloat);
+
+                const result = document.getElementById('result');
+                result.innerHTML = '<h3>Hasil:</h3>';
+                
+                const LU = decomposition(matrix);
+                for (let p = 0; p < numRows; p++) {
+                    result.innerHTML += `<p>Iterasi ke-${p + 1}:</p>`;
+                    result.innerHTML += `<p>Matrix L:</p>`;
+                    result.innerHTML += `<pre>${show(LU[p][0])}</pre>`;
+                    result.innerHTML += `<p>Matrix U:</p>`;
+                    result.innerHTML += `<pre>${show(LU[p][1])}</pre>`;
+                    result.innerHTML += '<br>';
+                }
+                
+                const L = LU[numRows - 1][0];
+                const U = LU[numRows - 1][1];
+                const t = forward_subs(vectorB, L);
+                const x = backward_subs(t, U);
+                result.innerHTML += `<p>Solusi (x):</p>`;
+                result.innerHTML += `<pre>${x.join(', ')}</pre>`;
+            }
+
+            function show(matrix) {
+                const numRows = matrix.length;
+                const numCols = matrix[0].length;
+                let output = '';
+                for (let row = 0; row < numRows; row++) {
+                    for (let col = 0; col < numCols; col++) {
+                        output += matrix[row][col].toFixed(2) + '\t';
+                    }
+                    output += '<br>';
+                }
+                return output;
+            }
+
+            function decomposition(A) {
+                const numRows = A.length;
+                const numCols = A[0].length;
+                const iterations = [];
+                const L = new Array(numRows).fill(0).map(() => new Array(numCols).fill(0));
+                const U = new Array(numRows).fill(0).map(() => new Array(numCols).fill(0));
+
+                for (let p = 0; p < numRows; p++) {
+                    for (let j = p; j < numCols; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < p; k++) {
+                            sum += L[p][k] * U[k][j];
+                        }
+                        U[p][j] = A[p][j] - sum;
+                    }
+
+                    for (let i = p; i < numRows; i++) {
+                        if (i === p) {
+                            L[i][p] = 1;
+                        } else {
+                            let sum = 0;
+                            for (let k = 0; k < p; k++) {
+                                sum += L[i][k] * U[k][p];
+                            }
+                            L[i][p] = (A[i][p] - sum) / U[p][p];
+                        }
+                    }
+                    iterations.push([JSON.parse(JSON.stringify(L)), JSON.parse(JSON.stringify(U))]);
+                }
+
+                return iterations;
+            }
+
+            function forward_subs(b, L) {
+                const numRows = b.length;
+                const t = new Array(numRows).fill(0);
+
+                for (let i = 0; i < numRows; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < i; j++) {
+                        sum += L[i][j] * t[j];
+                    }
+                    t[i] = b[i] - sum;
+                }
+
+                return t;
+            }
+
+            function backward_subs(t, U) {
+                const numRows = t.length;
+                const x = new Array(numRows).fill(0);
+
+                for (let i = numRows - 1; i >= 0; i--) {
+                    let sum = 0;
+                    for (let j = i; j < numRows; j++) {
+                        sum += U[i][j] * x[j];
+                    }
+                    x[i] = (1 / U[i][i]) * (t[i] - sum);
+                }
+
+                return x;
+            }
+        </script>
+    </div>
+</body>
+</html>

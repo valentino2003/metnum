@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    
+    <div class="sidebar">
+        <a href="index.html">Beranda</a>
+        <a href="perhitungan.html">Dekomposisi LU</a>
+        <a href="regulafalsi.html">Regula Falsi</a>
+        <a href="biseksi.html">Biseksi</a>
+        <a href="raphson.html">Metode Newton-Raphson</a>
+        <a href="gaussjordan.html">Metode Eliminasi Gauss-Jordan</a>
+    </div>
+    <div class="content">
+        <h1>Metode Biseksi</h1>
+        <label for="function">Masukkan fungsi (misal: x**4-3*x**2-1):</label>
+        <input type="text" id="function"><br>
+        <label for="x0">Tebakan pertama:</label>
+        <input type="number" id="x0" required><br>
+        <label for="x1">Tebakan kedua:</label>
+        <input type="number" id="x1" required><br>
+        <label for="tolerance">Toleransi kesalahan:</label>
+        <input type="number" id="tolerance" required><br>
+        <button type="button" onclick="biseksi()">Hitung (Biseksi)</button>
+        <div id="biseksi-result"></div>
+    </div>
+
+    <script>
+        // Kode JavaScript untuk Metode Biseksi
+        function biseksi() {
+            const functionText = document.getElementById('function').value;
+            const f = x => eval(functionText);
+            let x0 = parseFloat(document.getElementById('x0').value);
+            let x1 = parseFloat(document.getElementById('x1').value);
+            const tolerance = parseFloat(document.getElementById('tolerance').value);
+            
+            let x2;
+            let step = 1;
+            let condition = true;
+
+            const result = document.getElementById('biseksi-result');
+            result.innerHTML = `<h3>Hasil:</h3>`;
+            result.innerHTML += '<ul>';
+
+            while (condition) {
+                x2 = (x0 + x1) / 2;
+                condition = Math.abs(f(x2)) > tolerance;
+
+                result.innerHTML += `<li>Iterasi ke-${step}, x(0) = ${x0.toFixed(6)}, f(x0) = ${f(x0).toFixed(6)}, x(1) = ${x1.toFixed(6)}, f(x1) = ${f(x1).toFixed(6)}, x(2) = ${x2.toFixed(6)}, f(x2) = ${f(x2).toFixed(6)}</li>`;
+
+                if (f(x0) * f(x2) < 0) {
+                    x1 = x2;
+                } else {
+                    x0 = x2;
+                }
+
+                step++;
+            }
+
+            result.innerHTML += '</ul>';
+        }
+    </script>
+</body>
+</html>

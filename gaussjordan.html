@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="index.html">Beranda</a>
+        <a href="perhitungan.html">Dekomposisi LU</a>
+        <a href="regulafalsi.html">Regula Falsi</a>
+        <a href="biseksi.html">Biseksi</a>
+        <a href="raphson.html">Metode Newton-Raphson</a>
+        <a href="gaussjordan.html">Metode Eliminasi Gauss-Jordan</a>
+    </div>
+    <div class="content">
+        <h1>Metode Eliminasi Gauss-Jordan</h1>
+        <label for="num-rows">Masukkan jumlah baris:</label>
+        <input type="number" id="num-rows" placeholder="Contoh: 3">
+        <label for "num-cols">Masukkan jumlah kolom:</label>
+        <input type="number" id="num-cols" placeholder="Contoh: 4">
+        <button type="button" onclick="generateMatrixInput()">Masukkan Matriks</button>
+        <div id="matrix-input">
+            <!-- Tabel untuk menampilkan matriks -->
+            <table id="matrix-table">
+                <!-- Isi tabel akan di-generate dengan JavaScript -->
+            </table>
+        </div>
+        <button type="button" onclick="solveGaussJordan()">Hitung (Eliminasi Gauss-Jordan)</button>
+        <div id="gaussJordan-result">
+            <!-- Matriks hasil eliminasi akan ditampilkan dalam tabel yang terstruktur -->
+            <h3>Matriks setelah eliminasi Gauss-Jordan:</h3>
+            <table id="result-table">
+                <!-- Isi tabel hasil akan di-generate dengan JavaScript -->
+            </table>
+            <h3>Solusi:</h3>
+            <p id="solution-x">x = </p>
+            <p id="solution-y">y = </p>
+            <p id="solution-z">z = </p>
+        </div>
+    </div>
+
+    <script>
+        function generateMatrixInput() {
+            const numRows = parseInt(document.getElementById('num-rows').value);
+            const numCols = parseInt(document.getElementById('num-cols').value);
+
+            const matrixTable = document.getElementById('matrix-table');
+            matrixTable.innerHTML = '';
+
+            for (let i = 0; i < numRows; i++) {
+                const row = document.createElement('tr');
+
+                for (let j = 0; j < numCols; j++) {
+                    const cell = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.01';
+                    input.placeholder = `A[${i + 1}][${j + 1}]`;
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                }
+
+                matrixTable.appendChild(row);
+            }
+        }
+
+        function solveGaussJordan() {
+            const numRows = parseInt(document.getElementById('num-rows').value);
+            const numCols = parseInt(document.getElementById('num-cols').value);
+
+            const matrix = [];
+
+            for (let i = 0; i < numRows; i++) {
+                const row = [];
+                for (let j = 0; j < numCols; j++) {
+                    const inputValue = parseFloat(document.querySelector(`#matrix-table tr:nth-child(${i + 1}) td:nth-child(${j + 1}) input`).value);
+                    row.push(inputValue);
+                }
+                matrix.push(row);
+            }
+
+            const resultMatrix = gaussJordan(matrix);
+
+            const resultTable = document.getElementById('result-table');
+            resultTable.innerHTML = '';
+
+            for (let i = 0; i < numRows; i++) {
+                const row = document.createElement('tr');
+
+                for (let j = 0; j < numCols; j++) {
+                    const cell = document.createElement('td');
+                    cell.textContent = resultMatrix[i][j].toFixed(6);
+                    row.appendChild(cell);
+                }
+
+                resultTable.appendChild(row);
+            }
+
+            const [x, y, z] = resultMatrix.map(row => row[numCols - 1]);
+            document.getElementById('solution-x').textContent = `x = ${x.toFixed(6)}`;
+            document.getElementById('solution-y').textContent = `y = ${y.toFixed(6)}`;
+            document.getElementById('solution-z').textContent = `z = ${z.toFixed(6)}`;
+        }
+
+        function gaussJordan(matrix) {
+            const numRows = matrix.length;
+            const numCols = matrix[0].length;
+
+            for (let col = 0; col < numCols - 1; col++) {
+                let maxRow = col;
+                for (let i = col + 1; i < numRows; i++) {
+                    if (Math.abs(matrix[i][col]) > Math.abs(matrix[maxRow][col])) {
+                        maxRow = i;
+                    }
+                }
+
+                [matrix[col], matrix[maxRow]] = [matrix[maxRow], matrix[col]];
+
+                const pivot = matrix[col][col];
+                for (let j = col; j < numCols; j++) {
+                    matrix[col][j] /= pivot;
+                }
+
+                for (let i = 0; i < numRows; i++) {
+                    if (i !== col) {
+                        const factor = matrix[i][col];
+                        for (let j = col; j < numCols; j++) {
+                            matrix[i][j] -= factor * matrix[col][j];
+                        }
+                    }
+                }
+            }
+
+            return matrix;
+        }
+    </script>
+</body>
+</html>
